@@ -1,0 +1,118 @@
+# ========================================
+# =============== USER API ===============
+# ========================================
+
+### @name RegisterUser
+POST http://localhost:3000/api/users
+Content-Type: application/json
+
+{
+  "username": "JONATHAN",
+  "name": "JONATHAN GUNAWAN",
+  "password": "rahasia123"
+}
+
+### @name LoginUser
+POST http://localhost:3000/api/users/login
+Content-Type: application/json
+
+{
+  "username": "JONATHAN",
+  "password": "rahasia12345"
+}
+
+> {% client.global.set("token", response.body.data.token); %}
+
+### @name GetCurrentUser
+GET http://localhost:3000/api/users/current
+Authorization: {{token}}
+
+### @name UpdateCurrentUser
+PATCH http://localhost:3000/api/users/current
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "password": "rahasia12345"
+}
+
+### @name LogoutUser
+DELETE http://localhost:3000/api/users/logout
+Authorization: {{token}}
+
+
+# ========================================
+# ============= CONTACT API ==============
+# ========================================
+
+### @name CreateContact
+POST http://localhost:3000/api/contacts
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "first_name": "Contact First Name",
+  "last_name": "Contact Last Name",
+  "email": "contactemail@mail.test",
+  "phone": "081234567890"
+}
+
+### @name SearchContacts
+GET http://localhost:3000/api/contacts?email=updated&page=2&size=100
+Authorization: {{token}}
+
+### @name GetContactByID
+GET http://localhost:3000/api/contacts/2
+Authorization: {{token}}
+
+### @name UpdateContactByID
+PUT http://localhost:3000/api/contacts/1
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "email": "contactmail@updated.test"
+}
+
+### @name DeleteContactByID
+DELETE http://localhost:3000/api/contacts/1
+Authorization: {{token}}
+
+
+# ========================================
+# ============= ADDRESS API ==============
+# ========================================
+
+### @name CreateAddress
+POST http://localhost:3000/api/contacts/2/addresses
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "street": "Jalan Belum Ada 2",
+  "city": "Kota Belum Ada 2",
+  "province": "Provinsi Belum Ada 2",
+  "country": "Indonesia",
+  "postal_code": "12345"
+}
+
+### @name ListAddresses
+GET http://localhost:3000/api/contacts/2/addresses
+Authorization: {{token}}
+
+### @name GetAddressByID
+GET http://localhost:3000/api/contacts/2/addresses/1
+Authorization: {{token}}
+
+### @name UpdateAddressByID
+PUT http://localhost:3000/api/contacts/2/addresses/1
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "city": "Kota Sudah Ada"
+}
+
+### @name DeleteAddressByID
+DELETE http://localhost:3000/api/contacts/2/addresses/1
+Authorization: {{token}}

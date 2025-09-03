@@ -1,0 +1,178 @@
+openapi: 3.1.0
+info:
+  title: Addresses API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local
+tags:
+  - name: Addresses
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+  parameters:
+    ContactId:
+      name: contactId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+    AddressId:
+      name: addressId
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        errors: { type: string }
+      required: [errors]
+    AddressRequest:
+      type: object
+      properties:
+        street:       { type: string, minLength: 1 }
+        city:         { type: string, minLength: 1 }
+        province:     { type: string, minLength: 1 }
+        country:      { type: string, minLength: 1 }
+        Postal_code:  { type: string, minLength: 1 } # keeping original casing from spec
+      required: [street, city, province, country, Postal_code]
+    Address:
+      type: object
+      properties:
+        id:           { type: integer, format: int64 }
+        street:       { type: string }
+        city:         { type: string }
+        province:     { type: string }
+        country:      { type: string }
+        Postal_code:  { type: string }
+      required: [id, street, city, province, country, Postal_code]
+    AddressEnvelope:
+      type: object
+      properties:
+        data: { $ref: '#/components/schemas/Address' }
+      required: [data]
+    AddressListEnvelope:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Address' }
+      required: [data]
+paths:
+  /api/contacts/{contactId}/addresses:
+    post:
+      tags: [Addresses]
+      summary: Create Address
+      security: [{ ApiKeyAuth: [] }]
+      parameters: [ { $ref: '#/components/parameters/ContactId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddressRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddressEnvelope' }
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+    get:
+      tags: [Addresses]
+      summary: List Addresses
+      security: [{ ApiKeyAuth: [] }]
+      parameters: [ { $ref: '#/components/parameters/ContactId' } ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddressListEnvelope' }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/contacts/{contactId}/addresses/{addressId}:
+    put:
+      tags: [Addresses]
+      summary: Update Address
+      security: [{ ApiKeyAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+        - $ref: '#/components/parameters/AddressId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddressRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddressEnvelope' }
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+    get:
+      tags: [Addresses]
+      summary: Get Address
+      security: [{ ApiKeyAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AddressEnvelope' }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+    delete:
+      tags: [Addresses]
+      summary: Remove Address
+      security: [{ ApiKeyAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ContactId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: string, example: OK }
+                required: [data]
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }

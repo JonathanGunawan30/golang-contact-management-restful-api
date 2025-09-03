@@ -1,0 +1,172 @@
+openapi: 3.1.0
+info:
+  title: Users API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local
+tags:
+  - name: Users
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: string
+      required: [errors]
+    UserRegisterRequest:
+      type: object
+      properties:
+        username: { type: string, minLength: 1 }
+        password: { type: string, minLength: 1 }
+        name:     { type: string, minLength: 1, maxLength: 100 }
+      required: [username, password, name]
+    UserResponseData:
+      type: object
+      properties:
+        username: { type: string }
+        name:     { type: string }
+      required: [username, name]
+    UserEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/UserResponseData'
+      required: [data]
+    LoginRequest:
+      type: object
+      properties:
+        username: { type: string }
+        password: { type: string }
+      required: [username, password]
+    LoginResponseData:
+      type: object
+      properties:
+        token:
+          type: string
+          description: UUID token used in Authorization header
+      required: [token]
+    LoginEnvelope:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/LoginResponseData'
+      required: [data]
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:     { type: string, maxLength: 100 }
+        password: { type: string }
+      additionalProperties: false
+paths:
+  /api/users:
+    post:
+      tags: [Users]
+      summary: Register User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegisterRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserEnvelope' }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/users/login:
+    post:
+      tags: [Users]
+      summary: Login User
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginEnvelope' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/users/current:
+    patch:
+      tags: [Users]
+      summary: Update Current User
+      security: [{ ApiKeyAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdateRequest' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserEnvelope' }
+        '400':
+          description: Validation Error
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+    get:
+      tags: [Users]
+      summary: Get Current User
+      security: [{ ApiKeyAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserEnvelope' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/users/logout:
+    delete:
+      tags: [Users]
+      summary: Logout User
+      security: [{ ApiKeyAuth: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: string, example: OK }
+                required: [data]
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
