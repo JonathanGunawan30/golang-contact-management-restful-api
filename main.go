@@ -5,19 +5,20 @@ import (
 	"golang-contact-management-restful-api/internal/database"
 	"golang-contact-management-restful-api/internal/middleware"
 	"golang-contact-management-restful-api/internal/server"
-	userHandler "golang-contact-management-restful-api/modules/user/handler"
-	userRepository "golang-contact-management-restful-api/modules/user/repository"
-	userUsecase "golang-contact-management-restful-api/modules/user/usecase"
-
 	contactHandler "golang-contact-management-restful-api/modules/contact/handler"
 	contactRepository "golang-contact-management-restful-api/modules/contact/repository"
 	contactUsecase "golang-contact-management-restful-api/modules/contact/usecase"
+	userHandler "golang-contact-management-restful-api/modules/user/handler"
+	userRepository "golang-contact-management-restful-api/modules/user/repository"
+	userUsecase "golang-contact-management-restful-api/modules/user/usecase"
+	"os"
 
 	addressHandler "golang-contact-management-restful-api/modules/address/handler"
 	addressRepository "golang-contact-management-restful-api/modules/address/repository"
 	addressUsecase "golang-contact-management-restful-api/modules/address/usecase"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,6 +41,23 @@ func main() {
 
 	srv := server.NewFiberServer(cfg)
 	validate := validator.New()
+
+	env := os.Getenv("APP_ENV")
+
+	var allowOrigins string
+
+	if env == "production" {
+		allowOrigins = os.Getenv("FRONTEND_URL_PROD")
+	} else {
+		allowOrigins = os.Getenv("FRONTEND_URL_DEV")
+	}
+
+	srv.GetEngine().Use(cors.New(cors.Config{
+		AllowOrigins:     allowOrigins,
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowMethods:     "GET, POST, PUT, DELETE, PATCH",
+		AllowCredentials: true,
+	}))
 
 	uRepo := userRepository.NewUserRepository(db.Gorm)
 	uUC := userUsecase.NewUserUsecase(uRepo, validate)
