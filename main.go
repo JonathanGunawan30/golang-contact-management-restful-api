@@ -1,21 +1,21 @@
 package main
 
 import (
+	"strings"
+
 	"golang-contact-management-restful-api/config"
 	"golang-contact-management-restful-api/internal/database"
 	"golang-contact-management-restful-api/internal/middleware"
 	"golang-contact-management-restful-api/internal/server"
+	addressHandler "golang-contact-management-restful-api/modules/address/handler"
+	addressRepository "golang-contact-management-restful-api/modules/address/repository"
+	addressUsecase "golang-contact-management-restful-api/modules/address/usecase"
 	contactHandler "golang-contact-management-restful-api/modules/contact/handler"
 	contactRepository "golang-contact-management-restful-api/modules/contact/repository"
 	contactUsecase "golang-contact-management-restful-api/modules/contact/usecase"
 	userHandler "golang-contact-management-restful-api/modules/user/handler"
 	userRepository "golang-contact-management-restful-api/modules/user/repository"
 	userUsecase "golang-contact-management-restful-api/modules/user/usecase"
-	"os"
-
-	addressHandler "golang-contact-management-restful-api/modules/address/handler"
-	addressRepository "golang-contact-management-restful-api/modules/address/repository"
-	addressUsecase "golang-contact-management-restful-api/modules/address/usecase"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -29,12 +29,11 @@ func main() {
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		log.WithError(err).Fatal("Failed to load configuration file")
+		log.WithError(err).Fatal("Failed to load configuration")
 	}
 
 	db := database.NewPostgresDatabase()
-	err = db.Connect(cfg.Database.URL)
-	if err != nil {
+	if err := db.Connect(cfg.Database.URL); err != nil {
 		log.WithError(err).Fatal("Failed to connect to database")
 	}
 	defer db.Close()
@@ -42,14 +41,18 @@ func main() {
 	srv := server.NewFiberServer(cfg)
 	validate := validator.New()
 
-	env := os.Getenv("APP_ENV")
-
 	var allowOrigins string
-
-	if env == "production" {
-		allowOrigins = os.Getenv("FRONTEND_URL_PROD")
+	if cfg.AppEnv == "production" {
+		allowOrigins = cfg.Frontend.Prod
 	} else {
-		allowOrigins = os.Getenv("FRONTEND_URL_DEV")
+		var origins []string
+		if cfg.Frontend.Dev != "" {
+			origins = append(origins, cfg.Frontend.Dev)
+		}
+		if cfg.Frontend.Dev2 != "" {
+			origins = append(origins, cfg.Frontend.Dev2)
+		}
+		allowOrigins = strings.Join(origins, ", ")
 	}
 
 	srv.GetEngine().Use(cors.New(cors.Config{
