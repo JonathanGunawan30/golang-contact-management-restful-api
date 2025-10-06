@@ -17,6 +17,10 @@ import (
 	userRepository "golang-contact-management-restful-api/modules/user/repository"
 	userUsecase "golang-contact-management-restful-api/modules/user/usecase"
 
+	addressEntity "golang-contact-management-restful-api/modules/address/entities"
+	contactEntity "golang-contact-management-restful-api/modules/contact/entities"
+	userEntity "golang-contact-management-restful-api/modules/user/entities"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/sirupsen/logrus"
@@ -37,6 +41,22 @@ func main() {
 		log.WithError(err).Fatal("Failed to connect to database")
 	}
 	defer db.Close()
+
+	log.Info("Running AutoMigrate...")
+	if err := db.Gorm.AutoMigrate(
+		&userEntity.User{},
+		&contactEntity.Contact{},
+		&addressEntity.Address{},
+	); err != nil {
+		log.WithError(err).Fatal("Failed to run auto migration")
+	}
+	log.Info("AutoMigrate complete (safe to run multiple times)")
+
+	if err != nil {
+		log.WithError(err).Fatal("Failed to run auto migration")
+	}
+
+	log.Info("Auto migration completed successfully")
 
 	srv := server.NewFiberServer(cfg)
 	validate := validator.New()
