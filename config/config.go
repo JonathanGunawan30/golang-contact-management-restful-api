@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -23,6 +24,8 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
+	_ = godotenv.Load()
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
