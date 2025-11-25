@@ -78,7 +78,7 @@ func main() {
 	srv.GetEngine().Use(cors.New(cors.Config{
 		AllowOrigins:     allowOrigins,
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
-		AllowMethods:     "GET, POST, PUT, DELETE, PATCH",
+		AllowMethods:     "GET, POST, PUT, DELETE, PATCH, OPTIONS",
 		AllowCredentials: true,
 	}))
 
